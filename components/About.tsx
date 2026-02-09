@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useSound } from '@/hooks/useSound';
 
@@ -12,6 +12,8 @@ interface TimelineItem {
 
 const About = () => {
   const [visibleItems, setVisibleItems] = useState<boolean[]>([]);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { playChime, playSectionTransition } = useSound();
 
   useEffect(() => {
@@ -29,6 +31,13 @@ const About = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [playSectionTransition]);
+
+  const handleVideoLoad = () => {
+    setIsVideoLoaded(true);
+    if (videoRef.current) {
+      videoRef.current.play().catch(e => console.log("Autoplay prevented:", e));
+    }
+  };
 
   const timeline: TimelineItem[] = [
     {
@@ -89,24 +98,74 @@ const About = () => {
         whileInView="visible"
         viewport={{ once: true, margin: '-100px' }}
       >
-        {/* GIF Section at Top */}
+        {/* VIDEO Section at Top */}
         <motion.div variants={itemVariants} className="text-center mb-16">
           <motion.div
-            className="inline-block rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-2xl"
+            className="inline-block rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-2xl relative"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
-            <img
-              src="/about-gif.svg"
-              alt="About System"
-              className="w-full max-w-sm h-auto object-cover"
-            />
+            {/* Video Container */}
+            <div className="relative w-full max-w-sm h-auto">
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                onLoadedData={handleVideoLoad}
+                className="w-full h-auto object-cover rounded-3xl"
+                poster="/video-poster.jpg"
+              >
+                <source src="/about-video.mp4" type="video/mp4" />
+                <source src="/about-video.webm" type="video/webm" />
+                <img 
+                  src="/about-fallback.jpg" 
+                  alt="About System" 
+                  className="w-full h-auto"
+                />
+              </video>
+              
+              {!isVideoLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 rounded-3xl">
+                  <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-400 mb-2"></div>
+                    <p className="text-cyan-400 text-sm font-mono">LOADING SYSTEM...</p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="absolute bottom-4 right-4 flex gap-2">
+                <button
+                  onClick={() => videoRef.current?.paused ? videoRef.current.play() : videoRef.current?.pause()}
+                  className="bg-gray-900/70 hover:bg-gray-900/90 text-cyan-400 p-2 rounded-lg backdrop-blur-sm transition-all"
+                  aria-label={videoRef.current?.paused ? "Play video" : "Pause video"}
+                >
+                  {videoRef.current?.paused ? '▶' : '⏸'}
+                </button>
+                <button
+                  onClick={() => {
+                    if (videoRef.current) {
+                      videoRef.current.muted = !videoRef.current.muted;
+                    }
+                  }}
+                  className="bg-gray-900/70 hover:bg-gray-900/90 text-cyan-400 p-2 rounded-lg backdrop-blur-sm transition-all"
+                  aria-label={videoRef.current?.muted ? "Unmute video" : "Mute video"}
+                >
+                  {videoRef.current?.muted ? '🔇' : '🔊'}
+                </button>
+              </div>
+            </div>
           </motion.div>
+          
+          <p className="text-gray-400 text-sm mt-4 font-mono">
+            <span className="text-cyan-400">[VIDEO_ACTIVE]</span> System overview • Loop enabled
+          </p>
         </motion.div>
 
         {/* Main Title */}
         <motion.div variants={itemVariants} className="text-center mb-20">
-          {/* Animated Cyber Scan Line Above Title */}
           <motion.div
             className="flex items-center justify-center mb-8"
             animate={{ scaleX: [0.8, 1, 0.8] }}
@@ -134,17 +193,56 @@ const About = () => {
           </div>
         </motion.div>
 
-        {/* Bio Card - Enhanced */}
+        {/* Bio Card - Enhanced with NEON TEXT EFFECT */}
         <motion.div
           variants={itemVariants}
-          className="glass-effect-modern p-16 md:p-20 mb-24 rounded-3xl border border-cyan-400/40 backdrop-blur-xl hover:border-cyan-400/70 transition-all duration-500 shadow-2xl"
+          className="glass-effect-modern p-16 md:p-20 mb-24 rounded-3xl border border-cyan-400/40 backdrop-blur-xl hover:border-cyan-400/70 transition-all duration-500 shadow-2xl relative overflow-hidden group"
         >
-          <p className="text-xl md:text-2xl text-gray-200 leading-relaxed font-light">
-            Hi! I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-bold text-2xl md:text-3xl">akashwebd</span>, a passionate Full Stack Developer based in India. With expertise in modern web technologies and a love for clean code, I create seamless digital experiences that drive real business value. From conceptualization to deployment, I handle the entire development lifecycle with precision and creativity. My passion for innovation and problem-solving drives me to build solutions that matter and make an impact.
-          </p>
+          {/* Animated Neon Border Glow */}
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-3xl opacity-30 group-hover:opacity-70 transition-opacity duration-500 animate-pulse" />
+          <div className="absolute -inset-[2px] bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-3xl opacity-20 blur-xl group-hover:opacity-40 group-hover:blur-2xl transition-all duration-700" />
+          
+          {/* Content */}
+          <div className="relative z-10">
+            <p className="text-xl md:text-2xl text-gray-200 leading-relaxed font-light">
+              Hi! I'm{' '}
+              <span className="neon-text-name">
+                akashwebd
+              </span>
+              , a passionate{' '}
+              <span className="neon-text-cyan">Full Stack Developer</span>{' '}
+              based in{' '}
+              <span className="neon-text-purple">India</span>
+              . With expertise in{' '}
+              <span className="neon-text-pink">modern web technologies</span>{' '}
+              and a love for{' '}
+              <span className="neon-text-cyan">clean code</span>
+              , I create{' '}
+              <span className="neon-text-purple">seamless digital experiences</span>{' '}
+              that drive{' '}
+              <span className="neon-text-pink">real business value</span>
+              . From{' '}
+              <span className="neon-text-cyan">conceptualization</span>{' '}
+              to{' '}
+              <span className="neon-text-purple">deployment</span>
+              , I handle the entire development lifecycle with{' '}
+              <span className="neon-text-pink">precision</span>{' '}
+              and{' '}
+              <span className="neon-text-cyan">creativity</span>
+              . My passion for{' '}
+              <span className="neon-text-purple">innovation</span>{' '}
+              and{' '}
+              <span className="neon-text-pink">problem-solving</span>{' '}
+              drives me to build{' '}
+              <span className="neon-text-cyan">solutions that matter</span>{' '}
+              and make an{' '}
+              <span className="neon-text-purple">impact</span>
+              .
+            </p>
+          </div>
         </motion.div>
 
-        {/* Stats Grid - Modern */}
+        {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
           {[
             { label: 'Projects Completed', value: '50+', icon: '[>]' },
@@ -166,7 +264,7 @@ const About = () => {
           ))}
         </motion.div>
 
-        {/* Timeline - Modern */}
+        {/* Timeline */}
         <motion.div variants={itemVariants} className="mb-24">
           <h3 className="text-4xl font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-12 text-center">
             <span className="text-cyan-400">&lt;</span> JOURNEY TIMELINE <span className="text-cyan-400">&gt;</span>
@@ -197,7 +295,7 @@ const About = () => {
           </div>
         </motion.div>
 
-        {/* API Integrations Section - Modern */}
+        {/* API Integrations Section */}
         <motion.div variants={itemVariants} className="mb-12">
           <h3 className="text-4xl font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-12 text-center">
             <span className="text-purple-400">&lt;</span> API & PAYMENT INTEGRATIONS <span className="text-purple-400">&gt;</span>
@@ -288,6 +386,135 @@ const About = () => {
           </motion.div>
         </motion.div>
       </motion.div>
+
+      {/* Add these CSS styles to your global CSS or style tag */}
+      <style jsx global>{`
+        @keyframes neonGlow {
+          0%, 100% {
+            text-shadow: 
+              0 0 5px #00ffff,
+              0 0 10px #00ffff,
+              0 0 15px #00ffff,
+              0 0 20px #00ffff;
+          }
+          50% {
+            text-shadow: 
+              0 0 10px #00ffff,
+              0 0 20px #00ffff,
+              0 0 30px #00ffff,
+              0 0 40px #00ffff,
+              0 0 50px #00ffff;
+          }
+        }
+
+        @keyframes neonPulse {
+          0%, 100% {
+            opacity: 1;
+            text-shadow: 
+              0 0 5px currentColor,
+              0 0 10px currentColor,
+              0 0 15px currentColor;
+          }
+          50% {
+            opacity: 0.8;
+            text-shadow: 
+              0 0 10px currentColor,
+              0 0 20px currentColor,
+              0 0 30px currentColor;
+          }
+        }
+
+        .neon-text-name {
+          color: #ffffff;
+          font-weight: 900;
+          font-size: 2.5rem;
+          background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: neonGlow 2s ease-in-out infinite alternate;
+          position: relative;
+          display: inline-block;
+          padding: 0 8px;
+          margin: 0 4px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .neon-text-cyan {
+          color: #00ffff;
+          font-weight: 700;
+          animation: neonPulse 3s ease-in-out infinite;
+          text-shadow: 
+            0 0 5px #00ffff,
+            0 0 10px #00ffff,
+            0 0 15px #00ffff;
+          position: relative;
+          display: inline-block;
+          padding: 0 4px;
+          margin: 0 2px;
+        }
+
+        .neon-text-purple {
+          color: #ff00ff;
+          font-weight: 700;
+          animation: neonPulse 3.5s ease-in-out infinite;
+          text-shadow: 
+            0 0 5px #ff00ff,
+            0 0 10px #ff00ff,
+            0 0 15px #ff00ff;
+          position: relative;
+          display: inline-block;
+          padding: 0 4px;
+          margin: 0 2px;
+        }
+
+        .neon-text-pink {
+          color: #ff1493;
+          font-weight: 700;
+          animation: neonPulse 4s ease-in-out infinite;
+          text-shadow: 
+            0 0 5px #ff1493,
+            0 0 10px #ff1493,
+            0 0 15px #ff1493;
+          position: relative;
+          display: inline-block;
+          padding: 0 4px;
+          margin: 0 2px;
+        }
+
+        /* Add subtle glow to all colored text */
+        .neon-text-cyan::before,
+        .neon-text-purple::before,
+        .neon-text-pink::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 100%;
+          height: 100%;
+          background: currentColor;
+          filter: blur(10px);
+          opacity: 0.3;
+          transform: translate(-50%, -50%);
+          z-index: -1;
+          border-radius: 4px;
+        }
+
+        /* Enhanced container glow */
+        .glass-effect-modern {
+          box-shadow: 
+            0 0 20px rgba(0, 255, 255, 0.1),
+            inset 0 0 20px rgba(0, 255, 255, 0.05);
+        }
+
+        .glass-effect-modern:hover {
+          box-shadow: 
+            0 0 40px rgba(0, 255, 255, 0.2),
+            0 0 60px rgba(255, 0, 255, 0.1),
+            inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+      `}</style>
     </section>
   );
 };
