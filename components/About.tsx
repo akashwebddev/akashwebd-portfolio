@@ -1,6 +1,5 @@
 
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -100,7 +99,7 @@ const About = () => {
             transition={{ duration: 0.3 }}
           >
             <img
-              src="/about-me.jpg "
+              src="/public/about-me.jpg "
               alt="About System"
               className="w-full max-w-sm h-auto object-cover"
             />
