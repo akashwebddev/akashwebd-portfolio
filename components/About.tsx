@@ -99,7 +99,7 @@ const About = () => {
             transition={{ duration: 0.3 }}
           >
             <img
-              src="/public/about-me.jpg "
+              src="/about-me.jpg "
               alt="About System"
               className="w-full max-w-sm h-auto object-cover"
             />
